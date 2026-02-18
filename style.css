@@ -1,0 +1,220 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f4f6f9;
+}
+
+/* Auth Pages */
+.auth-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.auth-container {
+    background: #fff;
+    padding: 30px;
+    width: 350px;
+    border-radius: 8px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+}
+
+.btn {
+    background: #2c7be5;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.message {
+    margin-top: 10px;
+}
+
+/* Dashboard */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    background: #2c7be5;
+    color: white;
+}
+
+.dashboard-container {
+    display: flex;
+}
+
+.sidebar {
+    width: 200px;
+    background: #1b2a4e;
+    color: white;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.sidebar ul {
+    list-style: none;
+}
+
+.sidebar li {
+    margin-bottom: 15px;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 6px;
+}
+
+.products-header {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+}
+
+table {
+    width: 100%;
+    background: white;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    background: rgba(0,0,0,0.5);
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    width: 300px;
+}
+
+/* Section Control */
+.page-section {
+    display: block;
+}
+
+.hidden {
+    display: none;
+}
+
+.sidebar li {
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.sidebar li:hover {
+    background: #2c3e75;
+}
+
+.sidebar li.active {
+    background: #2c7be5;
+}
+
+/* Reports */
+.report-box {
+    background: white;
+    padding: 20px;
+    margin: 15px 0;
+    border-radius: 6px;
+}
+
+/* Settings */
+.settings-box {
+    background: white;
+    padding: 20px;
+    border-radius: 6px;
+}
+
+/* Dark Mode */
+.dark-mode {
+    background: #121212;
+    color: white;
+}
+
+.dark-mode .card,
+.dark-mode table,
+.dark-mode .modal-content,
+.dark-mode .report-box,
+.dark-mode .settings-box {
+    background: #1f1f1f;
+    color: white;
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.filters input,
+.filters select {
+    padding: 8px;
+    border: 1px solid #ccc;
+}
+
+.action-btn {
+    padding: 5px 8px;
+    border: none;
+    cursor: pointer;
+    margin-right: 5px;
+    border-radius: 4px;
+}
+
+.edit-btn {
+    background: orange;
+    color: white;
+}
+
+.delete-btn {
+    background: crimson;
+    color: white;
+}
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar.collapsed li {
+    text-align: center;
+}
