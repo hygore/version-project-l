@@ -1,387 +1,475 @@
-document.addEventListener("DOMContentLoaded", () => {
+// Protect internal pages
+const protectedPages = ["dashboard.html", "products.html", "reports.html", "settings.html"];
 
-    // STORAGE SETUP
-    if (!localStorage.getItem("users")) {
-        localStorage.setItem("users", JSON.stringify([]));
+const currentPage = window.location.pathname.split("/").pop();
+
+if (protectedPages.includes(currentPage)) {
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+
+    if (!user) {
+        window.location.href = "login.html";
     }
-
-    if (!localStorage.getItem("products")) {
-        localStorage.setItem("products", JSON.stringify([]));
-    }
-
-    const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
-
-    // ================= REGISTER =================
-    const registerForm = document.getElementById("registerForm");
-    if (registerForm) {
-        registerForm.addEventListener("submit", function (e) {
-            e.preventDefault();
-
-            const fullname = document.getElementById("fullname").value.trim();
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value;
-            const confirmPassword = document.getElementById("confirmPassword").value;
-            const message = document.getElementById("registerMessage");
-
-            const users = JSON.parse(localStorage.getItem("users"));
-
-            const emailExists = users.some(user => user.email === email);
-
-            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-
-            if (!fullname || !email || !password || !confirmPassword) {
-                message.textContent = "All fields are required.";
-                return;
-            }
-
-            if (!passwordRegex.test(password)) {
-                message.textContent = "Password must be 8+ chars, include uppercase, lowercase, number.";
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                message.textContent = "Passwords do not match.";
-                return;
-            }
-
-            if (emailExists) {
-                message.textContent = "Email already registered.";
-                return;
-            }
-
-            users.push({ fullname, email, password });
-            localStorage.setItem("users", JSON.stringify(users));
-
-            message.textContent = "Registration successful!";
-            setTimeout(() => {
-                window.location.href = "index.html";
-            }, 1000);
-        });
-    }
-
-    // ================= LOGIN =================
-    const loginForm = document.getElementById("loginForm");
-    if (loginForm) {
-        loginForm.addEventListener("submit", function (e) {
-            e.preventDefault();
-
-            const email = document.getElementById("loginEmail").value.trim();
-            const password = document.getElementById("loginPassword").value;
-            const message = document.getElementById("loginMessage");
-
-            const users = JSON.parse(localStorage.getItem("users"));
-            const user = users.find(user => user.email === email && user.password === password);
-
-            if (!user) {
-                message.textContent = "Invalid email or password.";
-                return;
-            }
-
-            localStorage.setItem("loggedInUser", JSON.stringify(user));
-            window.location.href = "dashboard.html";
-        });
-    }
-
-    // ================= DASHBOARD =================
-    if (window.location.pathname.includes("dashboard.html")) {
-
-        if (!currentUser) {
-            window.location.href = "index.html";
-        }
-
-        document.getElementById("userName").textContent = currentUser.fullname;
-
-        document.getElementById("logoutBtn").addEventListener("click", () => {
-            localStorage.removeItem("loggedInUser");
-            window.location.href = "index.html";
-        });
-
-        const productTable = document.getElementById("productTable");
-        const emptyState = document.getElementById("emptyState");
-
-        function loadProducts() {
-            const products = JSON.parse(localStorage.getItem("products"));
-            productTable.innerHTML = "";
-
-            if (products.length === 0) {
-                emptyState.style.display = "block";
-                return;
-            }
-
-            emptyState.style.display = "none";
-
-            let inStock = 0;
-            let outStock = 0;
-
-            products.forEach((product, index) => {
-                const status = product.quantity > 0 ? "In Stock" : "Out of Stock";
-                if (product.quantity > 0) inStock++; else outStock++;
-
-                const row = `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${product.name}</td>
-                        <td>${product.category}</td>
-                        <td>${product.quantity}</td>
-                        <td>$${product.price}</td>
-                        <td>${status}</td>
-                    </tr>
-                `;
-                productTable.innerHTML += row;
-            });
-
-            document.getElementById("totalProducts").textContent = products.length;
-            document.getElementById("inStock").textContent = inStock;
-            document.getElementById("outStock").textContent = outStock;
-        }
-
-        loadProducts();
-
-        const modal = document.getElementById("productModal");
-        document.getElementById("addProductBtn").onclick = () => modal.style.display = "flex";
-        document.getElementById("closeModal").onclick = () => modal.style.display = "none";
-
-        document.getElementById("productForm").addEventListener("submit", function (e) {
-            e.preventDefault();
-
-            const name = document.getElementById("productName").value.trim();
-            const category = document.getElementById("productCategory").value.trim();
-            const quantity = parseInt(document.getElementById("productQuantity").value);
-            const price = parseFloat(document.getElementById("productPrice").value);
-
-            if (!name || !category || quantity < 0 || isNaN(quantity) || isNaN(price)) {
-                return alert("Invalid product details.");
-            }
-
-            const products = JSON.parse(localStorage.getItem("products"));
-            products.push({ name, category, quantity, price });
-            localStorage.setItem("products", JSON.stringify(products));
-
-            modal.style.display = "none";
-            loadProducts();
-        });
-    }
-
-});
-
-if (window.location.pathname.includes("dashboard.html")) {
 }
-    // ================= NAVIGATION =================
 
-const navItems = document.querySelectorAll(".nav-item");
-const sections = document.querySelectorAll(".page-section");
 
-navItems.forEach(item => {
-    item.addEventListener("click", () => {
 
-        // Remove active class
-        navItems.forEach(nav => nav.classList.remove("active"));
-        item.classList.add("active");
+// REGISTER FUNCTION
+const registerForm = document.getElementById("registerForm");
 
-        // Hide all sections
-        sections.forEach(section => section.classList.add("hidden"));
+if (registerForm) {
+    registerForm.addEventListener("submit", function (e) {
+        e.preventDefault();
 
-        // Show selected
-        document.getElementById(item.dataset.section).classList.remove("hidden");
+        const fullName = document.getElementById("fullName").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+        const message = document.getElementById("registerMessage");
+
+        message.className = "";
+        message.textContent = "";
+        
+
+        // Validation
+        if (!fullName || !email || !password || !confirmPassword) {
+            showMessage(message, "All fields are required", "error");
+            return;
+        }
+
+        const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+        if (!emailPattern.test(email)) {
+            showMessage(message, "Invalid email format", "error");
+            return;
+        }
+
+        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!passwordPattern.test(password)) {
+            showMessage(message,
+                "Password must be 8+ chars with uppercase, lowercase & number",
+                "error"
+            );
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            showMessage(message, "Passwords do not match", "error");
+            return;
+        }
+
+        let users = JSON.parse(localStorage.getItem("users")) || [];
+
+        const emailExists = users.some(user => user.email === email);
+        if (emailExists) {
+            showMessage(message, "Email already registered", "error");
+            return;
+        }
+
+        const newUser = {
+            id: Date.now(),
+            fullName,
+            email,
+            password
+        };
+
+        users.push(newUser);
+        localStorage.setItem("users", JSON.stringify(users));
+
+        showMessage(message, "Registration successful! Redirecting...", "success");
+
+        setTimeout(() => {
+            window.location.href = "login.html";
+        }, 1500);
     });
-});
-let totalValue = 0;
-let lowStock = 0;
+}
 
-products.forEach(product => {
-    totalValue += product.price * product.quantity;
-    if (product.quantity <= 5 && product.quantity > 0) {
-        lowStock++;
+// MESSAGE FUNCTION
+function showMessage(element, msg, type) {
+    element.textContent = msg;
+    element.classList.add(type);
+}
+// LOGIN FUNCTION
+const loginForm = document.getElementById("loginForm");
+
+if (loginForm) {
+    loginForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value;
+        const message = document.getElementById("loginMessage");
+
+        message.className = "";
+        message.textContent = "";
+
+        if (!email || !password) {
+            showMessage(message, "All fields are required", "error");
+            return;
+        }
+
+        let users = JSON.parse(localStorage.getItem("users")) || [];
+
+        const user = users.find(u => u.email === email);
+
+        if (!user) {
+            showMessage(message, "Email not registered", "error");
+            return;
+        }
+
+        if (user.password !== password) {
+            showMessage(message, "Incorrect password", "error");
+            return;
+        }
+
+        // Save login state
+        localStorage.setItem("loggedInUser", JSON.stringify(user));
+
+        showMessage(message, "Login successful! Redirecting...", "success");
+
+        setTimeout(() => {
+            window.location.href = "dashboard.html";
+        }, 1200);
+    });
+}
+// DASHBOARD PROTECTION
+if (window.location.pathname.includes("dashboard.html")) {
+
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
+    if (!loggedInUser) {
+        window.location.href = "login.html";
     }
-});
+}
+// LOAD USER NAME
+if (window.location.pathname.includes("dashboard.html")) {
 
-document.getElementById("totalValue").textContent = "$" + totalValue.toFixed(2);
-document.getElementById("lowStock").textContent = lowStock;
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
 
-document.getElementById("userName").textContent = currentUser.fullname;
-document.getElementById("settingsName").textContent = currentUser.fullname;
-document.getElementById("settingsEmail").textContent = currentUser.email;
-document.getElementById("toggleThemeBtn").addEventListener("click", () => {
-    document.body.classList.toggle("dark-mode");
-});
+    if (user) {
+        document.getElementById("userName").textContent =
+            "Welcome, " + user.fullName;
+    }
+}
 
-productTable.innerHTML = "";
+// LOGOUT
+const logoutBtn = document.getElementById("logoutBtn");
 
-products.forEach((product, index) => {
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", function () {
+        localStorage.removeItem("loggedInUser");
+        window.location.href = "login.html";
+    });
+}
 
-    const status = product.quantity > 0 ? "In Stock" : "Out of Stock";
+// SIDEBAR TOGGLE
+const menuToggle = document.getElementById("menuToggle");
+const sidebar = document.getElementById("sidebar");
 
-    const row = document.createElement("tr");
+if (menuToggle) {
+    menuToggle.addEventListener("click", function () {
+        sidebar.classList.toggle("active");
+    });
+}
+     const productTable = document.getElementById("productTable");
+const searchInput = document.getElementById("searchInput");
 
-    row.innerHTML = `
-        <td>${index + 1}</td>
-        <td>${product.name}</td>
-        <td>${product.category}</td>
-        <td>${product.quantity}</td>
-        <td>$${product.price}</td>
-        <td>${status}</td>
-        <td>
-            <button class="action-btn edit-btn" onclick="editProduct(${index})">Edit</button>
-            <button class="action-btn delete-btn" onclick="deleteProduct(${index})">Delete</button>
-        </td>
-    `;
+if (productTable) {
+    loadProducts();
 
-    productTable.appendChild(row);
-});
+    document.getElementById("productForm")
+        .addEventListener("submit", function (e) {
 
-window.deleteProduct = function(index) {
-    const products = JSON.parse(localStorage.getItem("products"));
+        e.preventDefault();
 
-    if (!confirm("Are you sure you want to delete this product?")) return;
+        const name = productName.value.trim();
+        const category = productCategory.value.trim();
+        const quantity = parseInt(productQuantity.value);
+        const price = parseFloat(productPrice.value);
+        const message = document.getElementById("productMessage");
 
-    products.splice(index, 1);
+        if (!name || !category || isNaN(quantity) || isNaN(price)) {
+            message.textContent = "All fields required!";
+            message.className = "error";
+            return;
+        }
+
+        if (quantity < 0) {
+            message.textContent = "Quantity cannot be negative";
+            message.className = "error";
+            return;
+        }
+
+        let products = getProducts();
+
+        const newProduct = {
+            id: Date.now(),
+            name,
+            category,
+            quantity,
+            price
+        };
+
+        products.push(newProduct);
+        localStorage.setItem("products", JSON.stringify(products));
+
+        productForm.reset();
+        loadProducts();
+    });
+}
+
+function getProducts() {
+    return JSON.parse(localStorage.getItem("products")) || [];
+}
+
+function loadProducts(filter = "") {
+
+    const products = getProducts().filter(p =>
+        p.name.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    productTable.innerHTML = "";
+
+    if (products.length === 0) {
+        emptyState.classList.remove("d-none");
+    } else {
+        emptyState.classList.add("d-none");
+    }
+
+    products.forEach(product => {
+
+        const status = product.quantity > 0
+            ? `<span class="badge bg-success badge-stock">In Stock</span>`
+            : `<span class="badge bg-danger badge-stock">Out of Stock</span>`;
+
+        productTable.innerHTML += `
+            <tr>
+                <td>${product.id}</td>
+                <td>${product.name}</td>
+                <td>${product.category}</td>
+                <td>${product.quantity}</td>
+                <td>$${product.price}</td>
+                <td>${status}</td>
+                <td>
+                    <button class="action-btn action-edit"
+                        onclick="editProduct(${product.id})">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="action-btn action-delete"
+                        onclick="deleteProduct(${product.id})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    updateCards();
+}
+
+function updateCards() {
+    const products = getProducts();
+
+    totalProducts.textContent = products.length;
+    inStock.textContent =
+        products.filter(p => p.quantity > 0).length;
+
+    outStock.textContent =
+        products.filter(p => p.quantity <= 0).length;
+}
+
+function deleteProduct(id) {
+
+    if (!confirm("Delete this product?")) return;
+
+    let products = getProducts();
+
+    products = products.filter(p => p.id !== id);
+
     localStorage.setItem("products", JSON.stringify(products));
 
     loadProducts();
-};
+}
 
-window.editProduct = function(index) {
-    const products = JSON.parse(localStorage.getItem("products"));
-    const product = products[index];
+function editProduct(id) {
 
-    document.getElementById("productName").value = product.name;
-    document.getElementById("productCategory").value = product.category;
-    document.getElementById("productQuantity").value = product.quantity;
-    document.getElementById("productPrice").value = product.price;
+    let products = getProducts();
+    const product = products.find(p => p.id === id);
 
-    const modal = document.getElementById("productModal");
-    modal.style.display = "flex";
+    productName.value = product.name;
+    productCategory.value = product.category;
+    productQuantity.value = product.quantity;
+    productPrice.value = product.price;
 
-    document.getElementById("productForm").onsubmit = function(e) {
-        e.preventDefault();
+    deleteProduct(id);
+}
 
-        product.name = document.getElementById("productName").value.trim();
-        product.category = document.getElementById("productCategory").value.trim();
-        product.quantity = parseInt(document.getElementById("productQuantity").value);
-        product.price = parseFloat(document.getElementById("productPrice").value);
-
-        products[index] = product;
-        localStorage.setItem("products", JSON.stringify(products));
-
-        modal.style.display = "none";
-
-        loadProducts();
-    };
-};
-
-document.getElementById("searchInput").addEventListener("input", function() {
-
-    const searchValue = this.value.toLowerCase();
-    const rows = document.querySelectorAll("#productTable tr");
-
-    rows.forEach(row => {
-        const name = row.children[1].textContent.toLowerCase();
-        row.style.display = name.includes(searchValue) ? "" : "none";
+if (searchInput) {
+    searchInput.addEventListener("keyup", function () {
+        loadProducts(this.value);
     });
-});
+}
 
-const categories = [...new Set(products.map(p => p.category))];
-const categoryFilter = document.getElementById("categoryFilter");
 
-categoryFilter.innerHTML = `<option value="all">All Categories</option>`;
+    // Update Cards
+    document.getElementById("totalProducts").textContent = products.length;
+    document.getElementById("inStock").textContent =
+        products.filter(p => p.quantity > 0).length;
 
-categories.forEach(cat => {
-    categoryFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
-});
+    document.getElementById("outStock").textContent =
+        products.filter(p => p.quantity <= 0).length;
 
-document.getElementById("categoryFilter").addEventListener("change", function() {
+        let stockChart;
 
-    const value = this.value;
-    const rows = document.querySelectorAll("#productTable tr");
+function updateCards() {
+    const products = getProducts();
 
-    rows.forEach(row => {
-        const category = row.children[2].textContent;
-        row.style.display = (value === "all" || category === value) ? "" : "none";
-    });
-});
+    totalProducts.textContent = products.length;
+    inStock.textContent =
+        products.filter(p => p.quantity > 0).length;
 
-document.getElementById("toggleSidebar").addEventListener("click", () => {
-    document.querySelector(".sidebar").classList.toggle("collapsed");
-});
+    outStock.textContent =
+        products.filter(p => p.quantity <= 0).length;
 
-let chart;
+    updateChart();
+    updateLowStock();
+}
 
-function loadChart(inStock, outStock) {
+function updateChart() {
+
+    const products = getProducts();
+    const inStockCount = products.filter(p => p.quantity > 0).length;
+    const outStockCount = products.filter(p => p.quantity <= 0).length;
+
     const ctx = document.getElementById("stockChart");
 
-    if (chart) chart.destroy();
+    if (!ctx) return;
 
-    chart = new Chart(ctx, {
+    if (stockChart) stockChart.destroy();
+
+    stockChart = new Chart(ctx, {
         type: "doughnut",
         data: {
             labels: ["In Stock", "Out of Stock"],
             datasets: [{
-                data: [inStock, outStock],
-                backgroundColor: ["#2c7be5", "#dc3545"]
+                data: [inStockCount, outStockCount],
+                backgroundColor: ["#198754", "#dc3545"]
             }]
         }
     });
 }
- loadChart(inStock, outStock);
 
-document.getElementById("exportCSV").addEventListener("click", () => {
+function updateLowStock() {
 
-    const products = JSON.parse(localStorage.getItem("products"));
+    const list = document.getElementById("lowStockList");
+    if (!list) return;
 
-    let csv = "Name,Category,Quantity,Price\n";
+    const lowStock = getProducts().filter(p => p.quantity > 0 && p.quantity <= 5);
+
+    list.innerHTML = "";
+
+    if (lowStock.length === 0) {
+        list.innerHTML = `<li class="list-group-item">No low stock products</li>`;
+        return;
+    }
+
+    lowStock.forEach(product => {
+        list.innerHTML += `
+            <li class="list-group-item list-group-item-low">
+                ${product.name} (Qty: ${product.quantity})
+            </li>
+        `;
+    });
+}
+
+function exportPDF() {
+
+    const products = getProducts();
+
+    let content = `
+        SIMS – Stock Inventory Report
+        =======================================
+    `;
 
     products.forEach(p => {
-        csv += `${p.name},${p.category},${p.quantity},${p.price}\n`;
+        content += `
+        ID: ${p.id}
+        Name: ${p.name}
+        Category: ${p.category}
+        Quantity: ${p.quantity}
+        Price: $${p.price}
+        -------------------------------
+        `;
     });
 
-    const blob = new Blob([csv], { type: "text/csv" });
+    const blob = new Blob([content], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "products.csv";
+    a.download = "SIMS_Report.pdf";
     a.click();
-});
-
-let currentPage = 1;
-const rowsPerPage = 5;
-
-function paginate(products) {
-
-    const start = (currentPage - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-
-    return products.slice(start, end);
 }
-const totalPages = Math.ceil(products.length / rowsPerPage);
-const paginationDiv = document.getElementById("pagination");
-paginationDiv.innerHTML = "";
+// MENU SECTION SWITCHING
+document.querySelectorAll(".menu-link").forEach(link => {
 
-for (let i = 1; i <= totalPages; i++) {
+    link.addEventListener("click", function () {
 
-    const btn = document.createElement("button");
-    btn.textContent = i;
-    btn.onclick = () => {
-        currentPage = i;
-        loadProducts();
-    };
+        const sectionId = this.getAttribute("data-section");
 
-    paginationDiv.appendChild(btn);
-}
- if (!localStorage.getItem("logs")) {
-    localStorage.setItem("logs", JSON.stringify([]));
-}
+        document.querySelectorAll(".content-section")
+            .forEach(sec => sec.classList.add("d-none"));
 
-function addLog(action) {
-    const logs = JSON.parse(localStorage.getItem("logs"));
-    logs.push({
-        action,
-        user: currentUser.fullname,
-        date: new Date().toLocaleString()
+        document.getElementById(sectionId)
+            .classList.remove("d-none");
     });
-    localStorage.setItem("logs", JSON.stringify(logs));
-}
+});
+document.querySelectorAll(".menu-link").forEach(link => {
 
-addLog("Added product: " + name);
-addLog("Deleted product");
-addLog("Updated product: " + product.name);
+    link.addEventListener("click", function () {
+
+        const sectionId = this.getAttribute("data-section");
+
+        // Hide all sections
+        document.querySelectorAll(".content-section")
+            .forEach(sec => sec.classList.add("d-none"));
+
+        // Show selected section
+        document.getElementById(sectionId)
+            .classList.remove("d-none");
+
+        // 🔥 LOAD DATA DEPENDING ON SECTION
+        if (sectionId === "productsSection") {
+            loadProducts();
+        }
+
+        if (sectionId === "reportsSection") {
+            updateRevenueChart();
+            updateLowStock();
+        }
+
+        if (sectionId === "settingsSection") {
+            loadSettings();
+        }
+
+        if (sectionId === "dashboardSection") {
+            updateCards();
+        }
+    });
+});
+function loadSettings() {
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (!user) return;
+
+    const updateNameInput = document.getElementById("updateName");
+    if (updateNameInput) {
+        updateNameInput.value = user.fullName;
+    }
+}
+localStorage.getItem("products")
+localStorage.getItem("products")
+null
+document.addEventListener("DOMContentLoaded", function () {
+    loadProducts();
+    updateCards();
+});
+loadProducts()
+updateCards()

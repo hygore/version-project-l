@@ -1,155 +1,358 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>SIMS Dashboard</title>
-<link rel="stylesheet" href="style.css">
+    <title>SIMS – Ultimate Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { overflow-x:hidden; }
+        #sidebar { width:220px; min-height:100vh; }
+        .content-section { display:none; }
+        .active-section { display:block; }
+        .nav-link { cursor:pointer; }
+    </style>
 </head>
 <body>
 
-<header class="main-header">
-    <h1>SIMS – Stock Inventory Management System</h1>
-    <div>
-        <span id="userName"></span>
-        <button id="logoutBtn" class="btn logout">Logout</button>
+<div class="d-flex">
+
+    <!-- SIDEBAR -->
+    <div id="sidebar" class="bg-dark text-white p-3">
+        <h4 class="text-center">SIMS</h4>
+        <hr>
+
+        <a class="nav-link text-white" onclick="showSection('dashboard')">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <a class="nav-link text-white" onclick="showSection('products')">
+            <i class="bi bi-box"></i> Products
+        </a>
+
+        <a class="nav-link text-white" onclick="showSection('reports')">
+            <i class="bi bi-graph-up"></i> Reports
+        </a>
+
+        <a class="nav-link text-white" onclick="showSection('settings')">
+            <i class="bi bi-gear"></i> Settings
+        </a>
     </div>
-    <button id="toggleSidebar" class="btn">☰</button>
 
-</header>
+    <!-- MAIN -->
+    <div class="flex-fill p-4">
 
-<div class="dashboard-container">
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="content-section active-section">
+            <h3>Dashboard Overview</h3>
 
-   <aside class="sidebar">
-    <ul>
-        <li data-section="dashboardSection" class="nav-item active">Dashboard</li>
-        <li data-section="productsSection" class="nav-item">Products</li>
-        <li data-section="reportsSection" class="nav-item">Reports</li>
-        <li data-section="settingsSection" class="nav-item">Settings</li>
-    </ul>
-</aside>
- 
+            <div class="row mt-4">
+                <div class="col-md-3">
+                    <div class="card p-3 text-center">
+                        <h6>Total Products</h6>
+                        <h3 id="totalProducts"></h3>
+                    </div>
+                </div>
 
-    <main class="main-content">
+                <div class="col-md-3">
+                    <div class="card p-3 text-center">
+                        <h6>In Stock</h6>
+                        <h3 id="inStock"></h3>
+                    </div>
+                </div>
 
-    <!-- DASHBOARD SECTION -->
-    <section id="dashboardSection" class="page-section">
-        <div class="cards">
-            <div class="card">
-                <h3>Total Products</h3>
-                <p id="totalProducts">0</p>
+                <div class="col-md-3">
+                    <div class="card p-3 text-center">
+                        <h6>Out of Stock</h6>
+                        <h3 id="outStock"></h3>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card p-3 text-center">
+                        <h6>Total Value</h6>
+                        <h3 id="totalValue"></h3>
+                    </div>
+                </div>
             </div>
 
-            <div class="card">
-                <h3>In Stock</h3>
-                <p id="inStock">0</p>
-            </div>
-
-            <div class="card">
-                <h3>Out of Stock</h3>
-                <p id="outStock">0</p>
+            <div class="card mt-4 p-4">
+                <canvas id="stockChart"></canvas>
             </div>
         </div>
-    </section>
 
+        <!-- PRODUCTS -->
+        <div id="products" class="content-section">
+            <h3>Products List</h3>
+              <div class="card p-4 mt-3">
+    <h5>Add Product</h5>
 
-    <!-- PRODUCTS SECTION -->
-    <section id="productsSection" class="page-section hidden">
-        <div class="products-header">
-            <h2>Products</h2>
-            <button class="btn" id="addProductBtn">Add Product</button>
+    <form id="productForm">
+        <div class="row">
+            <div class="col-md-3">
+                <input type="text" id="pName" class="form-control" placeholder="Product Name" required>
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="pCategory" class="form-control" placeholder="Category" required>
+            </div>
+            <div class="col-md-2">
+                <input type="number" id="pQuantity" class="form-control" placeholder="Quantity" required>
+            </div>
+            <div class="col-md-2">
+                <input type="number" id="pPrice" class="form-control" placeholder="Price" required>
+            </div>
+            <div class="col-md-2">
+                <button type="button" onclick="addProduct()" class="btn btn-success w-100">
+                    Add
+                </button>
+            </div>
         </div>
-
-        <table>
-          <thead>
-<tr>
-    <th>ID</th>
-    <th>Name</th>
-    <th>Category</th>
-    <th>Quantity</th>
-    <th>Price</th>
-    <th>Status</th>
-    <th>Actions</th>
-</tr>
-</thead>
-  
-            <tbody id="productTable"></tbody>
-        </table>
-
-        <p id="emptyState">No products available.</p>
-        <div class="filters">
-    <input type="text" id="searchInput" placeholder="Search product...">
-
-    <select id="categoryFilter">
-        <option value="all">All Categories</option>
-    </select>
+    </form>
 </div>
-
-    </section>
-
-
-    <!-- REPORTS SECTION -->
-    <section id="reportsSection" class="page-section hidden">
-        <h2>Reports Overview</h2>
-        <div class="report-box">
-            <p>Total Stock Value:</p>
-            <h3 id="totalValue">$0</h3>
+            <table class="table table-striped mt-4">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody id="productTable"></tbody>
+            </table>
         </div>
 
-        <div class="report-box">
-            <p>Low Stock Items (Qty ≤ 5):</p>
-            <h3 id="lowStock">0</h3>
+        <!-- REPORTS -->
+        <div id="reports" class="content-section">
+            <h3>Revenue Report</h3>
+
+            <div class="card p-4 mt-4">
+                <canvas id="revenueChart"></canvas>
+            </div>
         </div>
-        <div class="report-box">
-    <canvas id="stockChart"></canvas>
-</div>
 
+        <!-- SETTINGS -->
+        <div id="settings" class="content-section">
+            <h3>System Settings</h3>
 
-    </section>
-
-
-    <!-- SETTINGS SECTION -->
-    <section id="settingsSection" class="page-section hidden">
-        <h2>Account Settings</h2>
-
-        <div class="settings-box">
-            <p><strong>Name:</strong> <span id="settingsName"></span></p>
-            <p><strong>Email:</strong> <span id="settingsEmail"></span></p>
-
-            <button class="btn" id="toggleThemeBtn">Toggle Dark Mode</button>
+            <div class="card p-4 mt-4">
+                <p><strong>System Name:</strong> SIMS – Stock Inventory</p>
+                <p><strong>Version:</strong> 1.0 Ultimate</p>
+                <p><strong>Developer:</strong> Frontend System</p>
+            </div>
         </div>
-    </section>
 
-</main>
-
-</div>
-
-<!-- Modal -->
-<div class="modal" id="productModal">
-    <div class="modal-content">
-        <h3>Add Product</h3>
-        <form id="productForm">
-            <label>Product Name</label>
-            <input type="text" id="productName" required>
-
-            <label>Category</label>
-            <input type="text" id="productCategory" required>
-
-            <label>Quantity</label>
-            <input type="number" id="productQuantity" required>
-
-            <label>Price</label>
-            <input type="number" id="productPrice" required>
-
-            <button type="submit" class="btn">Save</button>
-        </form>
-        <button id="closeModal">Close</button>
     </div>
+
 </div>
 
-<div id="pagination"></div>
+<script>
 
-<script src="app.js"></script>
-<script src="app.js"></script>
+// ===============================
+// INITIAL DATA
+// ===============================
 
+let products = [
+    { id:1, name:"Laptop", category:"Electronics", quantity:10, price:800 },
+    { id:2, name:"Keyboard", category:"Accessories", quantity:0, price:50 },
+    { id:3, name:"Mouse", category:"Accessories", quantity:5, price:25 },
+    { id:4, name:"Monitor", category:"Electronics", quantity:7, price:200 }
+];
+
+let stockChart;
+let revenueChart;
+
+// ===============================
+// SECTION SWITCH
+// ===============================
+
+function showSection(sectionId) {
+    document.querySelectorAll(".content-section")
+        .forEach(sec => sec.classList.remove("active-section"));
+
+    document.getElementById(sectionId)
+        .classList.add("active-section");
+}
+
+// ===============================
+// LOAD PRODUCTS TABLE
+// ===============================
+
+function loadProducts() {
+
+    const table = document.getElementById("productTable");
+    table.innerHTML = "";
+
+    products.forEach(p => {
+
+        table.innerHTML += `
+        <tr>
+            <td>${p.id}</td>
+            <td>${p.name}</td>
+            <td>${p.category}</td>
+            <td>${p.quantity}</td>
+            <td>$${p.price}</td>
+            <td>
+                <button class="btn btn-sm btn-warning"
+                    onclick="editProduct(${p.id})">Edit</button>
+                <button class="btn btn-sm btn-danger"
+                    onclick="deleteProduct(${p.id})">Delete</button>
+            </td>
+        </tr>
+        `;
+    });
+
+    loadDashboard();
+    loadStockChart();
+    loadRevenueChart();
+}
+
+// ===============================
+// ADD PRODUCT
+// ===============================
+
+function addProduct() {
+
+    const name = document.getElementById("pName").value.trim();
+    const category = document.getElementById("pCategory").value.trim();
+    const quantity = parseInt(document.getElementById("pQuantity").value);
+    const price = parseFloat(document.getElementById("pPrice").value);
+
+    if (!name || !category || isNaN(quantity) || isNaN(price)) {
+        alert("Please fill all fields correctly!");
+        return;
+    }
+
+    const newProduct = {
+        id: Date.now(),
+        name,
+        category,
+        quantity,
+        price
+    };
+
+    products.push(newProduct);
+
+    document.getElementById("productForm").reset();
+
+    loadProducts();
+}
+
+// ===============================
+// DELETE PRODUCT
+// ===============================
+
+function deleteProduct(id) {
+
+    if (confirm("Are you sure you want to delete this product?")) {
+        products = products.filter(p => p.id !== id);
+        loadProducts();
+    }
+}
+
+// ===============================
+// EDIT PRODUCT
+// ===============================
+
+function editProduct(id) {
+
+    const product = products.find(p => p.id === id);
+
+    const newName = prompt("Enter new product name:", product.name);
+    const newCategory = prompt("Enter new category:", product.category);
+    const newQuantity = prompt("Enter new quantity:", product.quantity);
+    const newPrice = prompt("Enter new price:", product.price);
+
+    if (newName && newCategory && newQuantity && newPrice) {
+        product.name = newName;
+        product.category = newCategory;
+        product.quantity = parseInt(newQuantity);
+        product.price = parseFloat(newPrice);
+        loadProducts();
+    }
+}
+
+// ===============================
+// DASHBOARD CARDS
+// ===============================
+
+function loadDashboard() {
+
+    document.getElementById("totalProducts").textContent = products.length;
+
+    const inStock = products.filter(p => p.quantity > 0).length;
+    const outStock = products.filter(p => p.quantity === 0).length;
+
+    document.getElementById("inStock").textContent = inStock;
+    document.getElementById("outStock").textContent = outStock;
+
+    const totalValue = products.reduce(
+        (sum, p) => sum + (p.quantity * p.price), 0
+    );
+
+    document.getElementById("totalValue").textContent =
+        "$" + totalValue.toFixed(2);
+}
+
+// ===============================
+// STOCK CHART
+// ===============================
+
+function loadStockChart() {
+
+    const ctx = document.getElementById("stockChart");
+    if (!ctx) return;
+
+    const inStock = products.filter(p => p.quantity > 0).length;
+    const outStock = products.filter(p => p.quantity === 0).length;
+
+    if (stockChart) stockChart.destroy();
+
+    stockChart = new Chart(ctx, {
+        type:"doughnut",
+        data:{
+            labels:["In Stock", "Out of Stock"],
+            datasets:[{
+                data:[inStock, outStock],
+                backgroundColor:["#198754", "#dc3545"]
+            }]
+        }
+    });
+}
+
+// ===============================
+// REVENUE CHART
+// ===============================
+
+function loadRevenueChart() {
+
+    const ctx = document.getElementById("revenueChart");
+    if (!ctx) return;
+
+    if (revenueChart) revenueChart.destroy();
+
+    revenueChart = new Chart(ctx, {
+        type:"bar",
+        data:{
+            labels: products.map(p => p.name),
+            datasets:[{
+                label:"Total Value",
+                data: products.map(p => p.quantity * p.price),
+                backgroundColor:"#0d6efd"
+            }]
+        }
+    });
+}
+
+// ===============================
+// INITIAL LOAD
+// ===============================
+
+loadProducts();
+
+</script>
 </body>
 </html>
